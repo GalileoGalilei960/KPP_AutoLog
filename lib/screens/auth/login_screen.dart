@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_card.dart';
@@ -6,9 +8,7 @@ import '../../core/widgets/app_logo.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/google_button.dart';
 import '../../core/widgets/info_banner.dart';
-import '../shell/main_layout.dart';
 import 'forgot_password_dialog.dart';
-import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,8 +19,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController =
-      TextEditingController(text: '••••••••••••');
+  final TextEditingController _passwordController = TextEditingController(
+    text: '••••••••••••',
+  );
 
   bool _showHelpBanner = true;
 
@@ -33,9 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _onLogin() {
     // Laboratory requirement: no business logic, navigate directly to main screen
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const MainLayout()),
-    );
+    Navigator.of(context).pushReplacementNamed(AppRoutes.home);
   }
 
   void _onForgotPassword() async {
@@ -43,7 +42,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (result != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Лист із посиланням для скидання пароля надіслано на $result'),
+          content: Text(
+            'Лист із посиланням для скидання пароля надіслано на $result',
+          ),
           backgroundColor: AppColors.primary,
           behavior: SnackBarBehavior.floating,
         ),
@@ -52,9 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _onNavigateToRegister() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const RegisterScreen()),
-    );
+    Navigator.of(context).pushReplacementNamed(AppRoutes.register);
   }
 
   @override
@@ -68,7 +67,10 @@ class _LoginScreenState extends State<LoginScreen> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 440),
               child: AppCard(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 32,
+                ),
                 borderRadius: 20,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -77,17 +79,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     // Help info banner
                     if (_showHelpBanner) ...[
                       InfoBanner(
-                        message:
-                            'Допомога: перевірте правильність email і пароля. Якщо забули пароль — скористайтеся посиланням нижче.',
+                        message: 'Допомога: перевірте правильність email і пароля. Якщо забули пароль — скористайтеся посиланням нижче.',
                         onClose: () => setState(() => _showHelpBanner = false),
                       ),
                       const SizedBox(height: 24),
                     ],
 
                     // App Logo
-                    const Center(
-                      child: AppLogo(iconSize: 34, fontSize: 22),
-                    ),
+                    const Center(child: AppLogo(iconSize: 34, fontSize: 22)),
                     const SizedBox(height: 18),
 
                     // Title
@@ -126,10 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 12),
 
                     // Submit button
-                    AppButton.primary(
-                      text: 'Увійти',
-                      onPressed: _onLogin,
-                    ),
+                    AppButton.primary(text: 'Увійти', onPressed: _onLogin),
                     const SizedBox(height: 16),
 
                     // Forgot Password link
@@ -137,7 +133,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       onTap: _onForgotPassword,
                       borderRadius: BorderRadius.circular(4),
                       child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 4,
+                        ),
                         child: Text(
                           'Забули пароль?',
                           style: TextStyle(
@@ -155,7 +154,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       onTap: _onNavigateToRegister,
                       borderRadius: BorderRadius.circular(4),
                       child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 4,
+                        ),
                         child: Text(
                           'Немає акаунта? Зареєструватися',
                           style: TextStyle(

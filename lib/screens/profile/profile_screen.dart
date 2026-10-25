@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_badge.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_text_field.dart';
-import '../auth/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -35,8 +35,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _onLogout() {
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      AppRoutes.login,
       (route) => false,
     );
   }

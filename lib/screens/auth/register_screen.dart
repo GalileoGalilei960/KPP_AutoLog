@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_card.dart';
@@ -6,8 +7,6 @@ import '../../core/widgets/app_logo.dart';
 import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/google_button.dart';
 import '../../core/widgets/info_banner.dart';
-import '../shell/main_layout.dart';
-import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   final bool showInitialConfirmationBanner;
@@ -46,15 +45,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _onRegister() {
     // Laboratory requirement: no business logic, navigate to main screen directly
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const MainLayout()),
-    );
+    Navigator.of(context).pushReplacementNamed(AppRoutes.home);
   }
 
   void _onNavigateToLogin() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-    );
+    Navigator.of(context).pushReplacementNamed(AppRoutes.login);
   }
 
   @override

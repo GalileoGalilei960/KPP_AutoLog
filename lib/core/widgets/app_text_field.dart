@@ -12,6 +12,8 @@ class AppTextField extends StatefulWidget {
   final ValueChanged<String>? onChanged;
   final String? Function(String?)? validator;
   final bool readOnly;
+  final bool enabled;
+  final AutovalidateMode? autovalidateMode;
   final int maxLines;
 
   const AppTextField({
@@ -26,6 +28,8 @@ class AppTextField extends StatefulWidget {
     this.onChanged,
     this.validator,
     this.readOnly = false,
+    this.enabled = true,
+    this.autovalidateMode,
     this.maxLines = 1,
   });
 
@@ -49,6 +53,8 @@ class _AppTextFieldState extends State<AppTextField> {
       obscureText: _obscured,
       keyboardType: widget.keyboardType,
       readOnly: widget.readOnly,
+      enabled: widget.enabled,
+      autovalidateMode: widget.autovalidateMode,
       maxLines: widget.maxLines,
       onChanged: widget.onChanged,
       validator: widget.validator,

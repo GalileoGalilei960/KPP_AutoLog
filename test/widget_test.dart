@@ -9,7 +9,7 @@ void main() {
   testWidgets('Full flow smoke test: Login -> Home -> Profile -> Logout',
       (WidgetTester tester) async {
     // Set desktop screen size for layout testing
-    tester.view.physicalSize = const Size(1280, 800);
+    tester.view.physicalSize = const Size(1280, 1200);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
 
@@ -29,6 +29,14 @@ void main() {
     expect(find.byType(LoginScreen), findsOneWidget);
 
     // Login directly to Dashboard
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Email'),
+      'ostaphaladii@gmail.com',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Пароль'),
+      'password123',
+    );
     await tester.tap(find.widgetWithText(ElevatedButton, 'Увійти'));
     await tester.pumpAndSettle();
     expect(find.byType(MainLayout), findsOneWidget);
@@ -46,6 +54,10 @@ void main() {
 
     // Logout
     await tester.tap(find.text('Вийти з акаунта'));
+    await tester.pumpAndSettle();
+    // Confirm dialog
+    expect(find.text('Вихід із системи'), findsOneWidget);
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Вийти'));
     await tester.pumpAndSettle();
     expect(find.byType(LoginScreen), findsOneWidget);
   });

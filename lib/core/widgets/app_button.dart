@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../theme/app_colors.dart';
 
 enum AppButtonVariant { primary, outlined, dangerOutlined }
@@ -11,6 +12,7 @@ class AppButton extends StatelessWidget {
   final bool fullWidth;
   final double height;
   final double borderRadius;
+  final bool isLoading;
 
   const AppButton({
     super.key,
@@ -21,6 +23,7 @@ class AppButton extends StatelessWidget {
     this.fullWidth = false,
     this.height = 46,
     this.borderRadius = 10,
+    this.isLoading = false,
   });
 
   const AppButton.primary({
@@ -31,6 +34,7 @@ class AppButton extends StatelessWidget {
     this.fullWidth = true,
     this.height = 46,
     this.borderRadius = 10,
+    this.isLoading = false,
   }) : variant = AppButtonVariant.primary;
 
   const AppButton.outlined({
@@ -41,6 +45,7 @@ class AppButton extends StatelessWidget {
     this.fullWidth = true,
     this.height = 46,
     this.borderRadius = 10,
+    this.isLoading = false,
   }) : variant = AppButtonVariant.outlined;
 
   const AppButton.dangerOutlined({
@@ -51,19 +56,23 @@ class AppButton extends StatelessWidget {
     this.fullWidth = false,
     this.height = 42,
     this.borderRadius = 10,
+    this.isLoading = false,
   }) : variant = AppButtonVariant.dangerOutlined;
 
   @override
   Widget build(BuildContext context) {
     Widget button;
+    final effectiveOnPressed = isLoading ? null : onPressed;
 
     switch (variant) {
       case AppButtonVariant.primary:
         button = ElevatedButton(
-          onPressed: onPressed,
+          onPressed: effectiveOnPressed,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
+            disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.6),
+            disabledForegroundColor: Colors.white.withValues(alpha: 0.8),
             elevation: 0,
             minimumSize: Size(fullWidth ? double.infinity : 0, height),
             shape: RoundedRectangleBorder(
@@ -76,7 +85,7 @@ class AppButton extends StatelessWidget {
 
       case AppButtonVariant.outlined:
         button = OutlinedButton(
-          onPressed: onPressed,
+          onPressed: effectiveOnPressed,
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.textPrimary,
             backgroundColor: AppColors.surface,
@@ -92,7 +101,7 @@ class AppButton extends StatelessWidget {
 
       case AppButtonVariant.dangerOutlined:
         button = OutlinedButton(
-          onPressed: onPressed,
+          onPressed: effectiveOnPressed,
           style: OutlinedButton.styleFrom(
             foregroundColor: AppColors.dangerText,
             backgroundColor: AppColors.surface,
@@ -114,6 +123,17 @@ class AppButton extends StatelessWidget {
   }
 
   Widget _buildChild(Color textColor) {
+    if (isLoading) {
+      return SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor: AlwaysStoppedAnimation<Color>(textColor),
+        ),
+      );
+    }
+
     if (icon == null) {
       return Text(
         text,
@@ -143,4 +163,3 @@ class AppButton extends StatelessWidget {
     );
   }
 }
-

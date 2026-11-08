@@ -16,6 +16,31 @@ class FirebaseConfig {
     defaultValue: 'kpp-lab-autoservice',
   );
 
+  /// Google OAuth 2.0 Client ID (тип «Web application»).
+  ///
+  /// Отримати можна в Google Cloud Console:
+  /// APIs & Services -> Credentials -> OAuth 2.0 Client IDs
+  ///
+  /// Передається через --dart-define=GOOGLE_CLIENT_ID=...
+  /// або через --dart-define-from-file=secrets.json
+  static const String googleClientId = String.fromEnvironment(
+    'GOOGLE_CLIENT_ID',
+    defaultValue: '',
+  );
+
+  /// Google OAuth 2.0 Client Secret.
+  ///
+  /// Передається через --dart-define=GOOGLE_CLIENT_SECRET=...
+  /// або через --dart-define-from-file=secrets.json
+  static const String googleClientSecret = String.fromEnvironment(
+    'GOOGLE_CLIENT_SECRET',
+    defaultValue: '',
+  );
+
   /// Перевірка чи налаштовано ключ API
   static bool get isConfigured => apiKey.isNotEmpty;
+
+  /// Перевірка чи налаштовано Google OAuth
+  static bool get isOAuthConfigured =>
+      googleClientId.isNotEmpty && googleClientSecret.isNotEmpty;
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/auth/auth_scope.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/services/analytics_service.dart';
@@ -26,9 +27,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String _selectedUnit = 'km'; // 'km' or 'miles'
 
   final _passwordFormKey = GlobalKey<FormState>();
-  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmNewPasswordController = TextEditingController();
+  final TextEditingController _confirmNewPasswordController =
+      TextEditingController();
 
   bool _isChangingPassword = false;
 
@@ -51,7 +54,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Вихід із системи'),
-        content: const Text('Ви дійсно бажаєте вийти зі свого облікового запису?'),
+        content: const Text(
+          'Ви дійсно бажаєте вийти зі свого облікового запису?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
@@ -70,12 +75,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (confirmed == true && mounted) {
-      await AuthScope.repositoryOf(context).signOut();
+      final repository = AuthScope.repositoryOf(context);
+      await AnalyticsService.instance.logLogout();
+      await repository.signOut();
       if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          AppRoutes.login,
-          (route) => false,
-        );
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
       }
     }
   }
@@ -91,6 +96,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       try {
         final repository = AuthScope.repositoryOf(context);
         await repository.updatePhotoUrl(newPhotoUrl);
+        await AnalyticsService.instance.logProfileUpdate(
+          field: 'photo_url',
+          value: newPhotoUrl,
+        );
         _showNotice('Фото профілю успішно оновлено');
       } on AuthException catch (e) {
         _showNotice(e.message, isError: true);
@@ -111,6 +120,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       try {
         final repository = AuthScope.repositoryOf(context);
         await repository.updateDisplayName(newName);
+        await AnalyticsService.instance.logProfileUpdate(
+          field: 'display_name',
+          value: newName,
+        );
         _showNotice("Ім'я успішно оновлено");
       } on AuthException catch (e) {
         _showNotice(e.message, isError: true);
@@ -140,6 +153,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _newPasswordController.clear();
       _confirmNewPasswordController.clear();
 
+      await AnalyticsService.instance.logPasswordChange();
       _showNotice('Пароль успішно змінено!');
     } on AuthException catch (e) {
       _showNotice(e.message, isError: true);
@@ -150,7 +164,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
         reason: 'Password change failed',
         fatal: false,
       );
-      _showNotice('Не вдалося змінити пароль. Спробуйте пізніше.', isError: true);
+      _showNotice(
+        'Не вдалося змінити пароль. Спробуйте пізніше.',
+        isError: true,
+      );
     } finally {
       if (mounted) {
         setState(() => _isChangingPassword = false);
@@ -158,9 +175,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void _onTestCrashlytics() {
-    CrashlyticsService.instance.simulateTestCrash(fatal: false);
-    _showNotice('⚠️ Тестову нефатальну помилку зареєстровано у Crashlytics!');
+  void _onTestCrashlytics({bool fatal = false}) {
+    CrashlyticsService.instance.simulateTestCrash(fatal: fatal);
+    if (fatal) {
+      _showNotice('💥 Тестовий ФАТАЛЬНИЙ збій зареєстровано у Crashlytics!', isError: true);
+    } else {
+      _showNotice('⚠️ Тестову нефатальну помилку зареєстровано у Crashlytics!');
+    }
   }
 
   void _showNotice(String message, {bool isError = false}) {
@@ -219,14 +240,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       width: 64,
                                       height: 64,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) => Text(
-                                        initials,
-                                        style: const TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.w700,
-                                          color: AppColors.avatarText,
-                                        ),
-                                      ),
+                                      errorBuilder:
+                                          (context, error, stackTrace) => Text(
+                                            initials,
+                                            style: const TextStyle(
+                                              fontSize: 22,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.avatarText,
+                                            ),
+                                          ),
                                     ),
                                   )
                                 : Text(
@@ -247,7 +269,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               decoration: BoxDecoration(
                                 color: AppColors.primary,
                                 shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 2,
+                                ),
                               ),
                               child: const Icon(
                                 Icons.edit,
@@ -284,7 +309,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 color: AppColors.textSecondary,
                                 tooltip: "Редагувати ім'я",
                                 onPressed: _onEditName,
-                                padding: const EdgeInsets.symmetric(horizontal: 6),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                ),
                                 constraints: const BoxConstraints(),
                               ),
                             ],
@@ -340,8 +367,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       initialValue: _selectedCurrency,
                       decoration: const InputDecoration(
                         labelText: 'Валюта (UAH/USD)',
-                        contentPadding:
-                            EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
                       items: const [
                         DropdownMenuItem(value: 'UAH', child: Text('UAH')),
@@ -349,7 +378,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         DropdownMenuItem(value: 'EUR', child: Text('EUR')),
                       ],
                       onChanged: (val) {
-                        if (val != null) setState(() => _selectedCurrency = val);
+                        if (val != null) {
+                          setState(() => _selectedCurrency = val);
+                        }
                       },
                     );
 
@@ -376,7 +407,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               // Km option
                               Expanded(
                                 child: InkWell(
-                                  onTap: () => setState(() => _selectedUnit = 'km'),
+                                  onTap: () =>
+                                      setState(() => _selectedUnit = 'km'),
                                   borderRadius: const BorderRadius.horizontal(
                                     left: Radius.circular(22),
                                   ),
@@ -386,16 +418,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       color: _selectedUnit == 'km'
                                           ? AppColors.primaryLight
                                           : Colors.transparent,
-                                      borderRadius: const BorderRadius.horizontal(
-                                        left: Radius.circular(22),
-                                      ),
+                                      borderRadius:
+                                          const BorderRadius.horizontal(
+                                            left: Radius.circular(22),
+                                          ),
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         if (_selectedUnit == 'km') ...[
-                                          const Icon(Icons.check,
-                                              size: 15, color: AppColors.primary),
+                                          const Icon(
+                                            Icons.check,
+                                            size: 15,
+                                            color: AppColors.primary,
+                                          ),
                                           const SizedBox(width: 6),
                                         ],
                                         Text(
@@ -428,16 +465,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       color: _selectedUnit == 'miles'
                                           ? AppColors.primaryLight
                                           : Colors.transparent,
-                                      borderRadius: const BorderRadius.horizontal(
-                                        right: Radius.circular(22),
-                                      ),
+                                      borderRadius:
+                                          const BorderRadius.horizontal(
+                                            right: Radius.circular(22),
+                                          ),
                                     ),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         if (_selectedUnit == 'miles') ...[
-                                          const Icon(Icons.check,
-                                              size: 15, color: AppColors.primary),
+                                          const Icon(
+                                            Icons.check,
+                                            size: 15,
+                                            color: AppColors.primary,
+                                          ),
                                           const SizedBox(width: 6),
                                         ],
                                         Text(
@@ -608,75 +650,101 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // Section: Інструменти діагностики (Crashlytics, Завдання 2)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFF8FAFC),
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFEF3C7),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Icon(
-                          Icons.bug_report_outlined,
-                          size: 20,
-                          color: Color(0xFFD97706),
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEF3C7),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.bug_report_outlined,
+                              size: 20,
+                              color: Color(0xFFD97706),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'Моніторинг збоїв (Firebase Crashlytics)',
+                                  style: TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'Згенерувати тестову помилку для звіту Лабораторної №4',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Моніторинг збоїв (Firebase Crashlytics)',
-                              style: TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.warning_amber_rounded, size: 16),
+                            label: const Text('Тест Non-Fatal'),
+                            onPressed: () => _onTestCrashlytics(fatal: false),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFD97706),
+                              side: const BorderSide(color: Color(0xFFFCD34D)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            SizedBox(height: 2),
-                            Text(
-                              'Згенерувати тестову помилку для звіту Лабораторної №4',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.textSecondary,
+                          ),
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.dangerous_outlined, size: 16),
+                            label: const Text('Тест Fatal'),
+                            onPressed: () => _onTestCrashlytics(fatal: true),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.dangerText,
+                              side: const BorderSide(color: AppColors.dangerText),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.flash_on, size: 16),
-                        label: const Text('Тест збою'),
-                        onPressed: _onTestCrashlytics,
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFFD97706),
-                          side: const BorderSide(color: Color(0xFFFCD34D)),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      OutlinedButton.icon(
-                        icon: const Icon(Icons.list_alt, size: 16),
-                        label: const Text('Журнал подій'),
-                        onPressed: () => DiagnosticLogsDialog.show(context),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          side: const BorderSide(color: AppColors.primary),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                          OutlinedButton.icon(
+                            icon: const Icon(Icons.list_alt, size: 16),
+                            label: const Text('Журнал подій'),
+                            onPressed: () => DiagnosticLogsDialog.show(context),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.primary,
+                              side: const BorderSide(color: AppColors.primary),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
@@ -686,7 +754,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 // Bottom Session Status Card
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 16),
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.background,
                     borderRadius: BorderRadius.circular(14),
@@ -738,8 +808,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // Logout button
                       AppButton.dangerOutlined(
                         text: 'Вийти з акаунта',
-                        icon: const Icon(Icons.logout,
-                            size: 16, color: AppColors.dangerText),
+                        icon: const Icon(
+                          Icons.logout,
+                          size: 16,
+                          color: AppColors.dangerText,
+                        ),
                         onPressed: _onLogout,
                       ),
                     ],

@@ -107,15 +107,22 @@ class CrashlyticsService {
   void simulateTestCrash({bool fatal = false}) {
     try {
       throw StateError(
-        'Тестова помилка для перевірки Crashlytics у Лабораторній роботі №4 (AutoLog)',
+        fatal
+            ? 'Тестова критична (FATAL) помилка для перевірки Crashlytics у Лабораторній роботі №4'
+            : 'Тестова нефатальна (NON-FATAL) помилка для перевірки Crashlytics у Лабораторній роботі №4 (AutoLog)',
       );
     } catch (e, stack) {
       recordError(
         e,
         stack,
-        reason: 'Ручне тестування інтеграції звітування про збої',
+        reason: fatal
+            ? 'Ручне тестування критичного (фатального) збою застосунку'
+            : 'Ручне тестування інтеграції звітування про збої',
         fatal: fatal,
       );
     }
   }
+
+  /// Генерація фатальної помилки (FATAL)
+  void simulateFatalCrash() => simulateTestCrash(fatal: true);
 }

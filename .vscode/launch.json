@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "AutoService (with secrets)",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "--dart-define-from-file=secrets.json"
+      ]
+    },
+    {
+      "name": "AutoService",
+      "request": "launch",
+      "type": "dart"
+    }
+  ]
+}

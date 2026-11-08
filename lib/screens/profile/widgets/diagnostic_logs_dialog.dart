@@ -288,18 +288,36 @@ class _DiagnosticLogsDialogState extends State<DiagnosticLogsDialog>
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              Wrap(
+                spacing: 10,
+                runSpacing: 8,
+                alignment: WrapAlignment.end,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   OutlinedButton.icon(
-                    icon: const Icon(Icons.flash_on, size: 16),
-                    label: const Text('Згенерувати тестовий збій'),
+                    icon: const Icon(Icons.warning_amber_rounded, size: 16),
+                    label: const Text('Non-Fatal збій'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFD97706),
+                      side: const BorderSide(color: Color(0xFFFCD34D)),
+                    ),
                     onPressed: () {
                       CrashlyticsService.instance.simulateTestCrash(fatal: false);
                       setState(() {});
                     },
                   ),
-                  const SizedBox(width: 12),
+                  OutlinedButton.icon(
+                    icon: const Icon(Icons.dangerous_outlined, size: 16),
+                    label: const Text('Fatal збій'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFB91C1C),
+                      side: const BorderSide(color: Color(0xFFFCA5A5)),
+                    ),
+                    onPressed: () {
+                      CrashlyticsService.instance.simulateTestCrash(fatal: true);
+                      setState(() {});
+                    },
+                  ),
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: ElevatedButton.styleFrom(

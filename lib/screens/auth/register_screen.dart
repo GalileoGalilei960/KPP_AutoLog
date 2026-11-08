@@ -13,7 +13,6 @@ import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/google_button.dart';
 import '../../core/widgets/info_banner.dart';
 import '../../data/repositories/auth_repository.dart';
-import 'widgets/google_account_picker_dialog.dart';
 
 class RegisterScreen extends StatefulWidget {
   final bool showInitialConfirmationBanner;
@@ -105,9 +104,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   Future<void> _onGoogleRegister() async {
-    final account = await GoogleAccountPickerDialog.show(context);
-    if (account == null || !mounted) return;
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -115,11 +111,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       final repository = AuthScope.repositoryOf(context);
-      await repository.signInWithGoogle(
-        email: account.email,
-        displayName: account.displayName,
-        photoUrl: account.photoUrl,
-      );
+      await repository.signInWithGoogle();
 
       await AnalyticsService.instance.logSignUp(signUpMethod: 'google');
 

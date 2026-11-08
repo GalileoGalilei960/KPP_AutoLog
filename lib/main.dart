@@ -11,16 +11,13 @@ import 'data/repositories/firebase_auth_rest_repository.dart';
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 1. Ініціалізація сервісу відстеження збоїв (Firebase Crashlytics, Завдання 2)
   CrashlyticsService.instance.initialize();
 
-  // 2. Ініціалізація репозиторію автентифікації та відновлення сеансу (Завдання 4)
   final AuthRepository authRepository = FirebaseAuthRestRepository();
   await authRepository.initialize();
 
   final authController = AuthController(repository: authRepository);
 
-  // 3. Реєстрація запуску застосунку в сервісі аналітики (Firebase Analytics, Завдання 1)
   await AnalyticsService.instance.logEvent(
     name: 'app_open',
     parameters: {
@@ -29,7 +26,6 @@ void main(List<String> args) async {
     },
   );
 
-  // 4. Визначення початкового маршруту з урахуванням статусу входу та deep-linking
   const envRoute = String.fromEnvironment('route');
   String? cliRoute;
   for (int i = 0; i < args.length; i++) {
@@ -49,8 +45,9 @@ void main(List<String> args) async {
       (platformRoute != '/' && platformRoute.isNotEmpty) ? platformRoute : null;
 
   // Якщо користувач уже увійшов — відкриваємо home, інакше екран логіну
-  final defaultStartRoute =
-      authRepository.isAuthenticated ? AppRoutes.home : AppRoutes.login;
+  final defaultStartRoute = authRepository.isAuthenticated
+      ? AppRoutes.home
+      : AppRoutes.login;
 
   final resolvedRoute = envRoute.isNotEmpty
       ? envRoute
@@ -68,10 +65,7 @@ void main(List<String> args) async {
 class AutoLogApp extends StatelessWidget {
   final String initialRoute;
 
-  const AutoLogApp({
-    super.key,
-    this.initialRoute = AppRoutes.login,
-  });
+  const AutoLogApp({super.key, this.initialRoute = AppRoutes.login});
 
   @override
   Widget build(BuildContext context) {
@@ -83,9 +77,7 @@ class AutoLogApp extends StatelessWidget {
       onGenerateRoute: AppRoutes.onGenerateRoute,
       onGenerateInitialRoutes: (String initialRouteName) {
         return [
-          AppRoutes.onGenerateRoute(
-            RouteSettings(name: initialRouteName),
-          ),
+          AppRoutes.onGenerateRoute(RouteSettings(name: initialRouteName)),
         ];
       },
     );

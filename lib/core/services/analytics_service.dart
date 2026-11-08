@@ -50,6 +50,52 @@ class AnalyticsService {
     );
   }
 
+  /// Реєстрація виходу з облікового запису (ручна дія)
+  Future<void> logLogout() async {
+    await logEvent(
+      name: 'logout',
+      parameters: {'timestamp': DateTime.now().toIso8601String()},
+    );
+  }
+
+  /// Реєстрація оновлення даних профілю (ручна дія: ім'я, фото)
+  Future<void> logProfileUpdate({required String field, String? value}) async {
+    final params = <String, Object>{'field': field};
+    if (value != null) params['value'] = value;
+    await logEvent(
+      name: 'profile_update',
+      parameters: params,
+    );
+  }
+
+  /// Реєстрація успішної зміни пароля користувачем (ручна дія)
+  Future<void> logPasswordChange() async {
+    await logEvent(
+      name: 'password_change',
+      parameters: {'method': 'in_app_profile'},
+    );
+  }
+
+  /// Реєстрація запиту на відновлення пароля (ручна дія)
+  Future<void> logPasswordResetRequested({required String email}) async {
+    await logEvent(
+      name: 'password_reset_request',
+      parameters: {
+        'email_domain': email.contains('@') ? email.split('@').last : 'unknown',
+      },
+    );
+  }
+
+  /// Реєстрація ручних дій користувача з автомобілем (натискання кнопок ТО/пробігу)
+  Future<void> logVehicleAction({required String action, String? detail}) async {
+    final params = <String, Object>{'action': action};
+    if (detail != null) params['detail'] = detail;
+    await logEvent(
+      name: 'vehicle_action',
+      parameters: params,
+    );
+  }
+
   /// Реєстрація перегляду екрана (logScreenView)
   Future<void> logScreenView({required String screenName}) async {
     await logEvent(

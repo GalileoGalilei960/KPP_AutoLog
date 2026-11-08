@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/services/analytics_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../home/home_screen.dart';
 import '../profile/profile_screen.dart';
@@ -25,12 +26,21 @@ class _MainLayoutState extends State<MainLayout> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _logCurrentTab(_currentIndex);
+  }
+
+  void _logCurrentTab(int index) {
+    const tabNames = ['HomeScreen', 'GarageScreen', 'HistoryScreen', 'ProfileScreen'];
+    if (index >= 0 && index < tabNames.length) {
+      AnalyticsService.instance.logScreenView(screenName: tabNames[index]);
+    }
   }
 
   void _onSelectTab(int index) {
     setState(() {
       _currentIndex = index;
     });
+    _logCurrentTab(index);
     if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
       Navigator.of(context).pop();
     }

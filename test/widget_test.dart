@@ -53,6 +53,7 @@ void main() {
     expect(find.text('Безпека'), findsOneWidget);
 
     // Logout
+    await tester.ensureVisible(find.text('Вийти з акаунта'));
     await tester.tap(find.text('Вийти з акаунта'));
     await tester.pumpAndSettle();
     // Confirm dialog

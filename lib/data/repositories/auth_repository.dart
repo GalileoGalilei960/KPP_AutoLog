@@ -37,12 +37,8 @@ abstract class AuthRepository {
   /// Вхід за email та паролем
   Future<void> signIn({required String email, required String password});
 
-  /// Вхід через Google
-  Future<void> signInWithGoogle({
-    String? email,
-    String? displayName,
-    String? photoUrl,
-  });
+  /// Вхід через Google (OAuth 2.0 + Firebase signInWithIdp)
+  Future<void> signInWithGoogle();
 
   /// Запит на відновлення пароля (надсилання листа на email)
   Future<void> sendPasswordResetEmail(String email);

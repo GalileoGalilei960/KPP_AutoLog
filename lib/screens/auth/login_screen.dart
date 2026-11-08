@@ -14,7 +14,6 @@ import '../../core/widgets/google_button.dart';
 import '../../core/widgets/info_banner.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'forgot_password_dialog.dart';
-import 'widgets/google_account_picker_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -88,9 +87,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _onGoogleLogin() async {
-    final account = await GoogleAccountPickerDialog.show(context);
-    if (account == null || !mounted) return;
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -98,11 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final repository = AuthScope.repositoryOf(context);
-      await repository.signInWithGoogle(
-        email: account.email,
-        displayName: account.displayName,
-        photoUrl: account.photoUrl,
-      );
+      await repository.signInWithGoogle();
 
       await AnalyticsService.instance.logLogin(loginMethod: 'google');
 

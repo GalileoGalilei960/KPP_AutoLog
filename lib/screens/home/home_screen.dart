@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/services/analytics_service.dart';
 import '../../core/theme/app_colors.dart';
 import 'widgets/active_car_card.dart';
 import 'widgets/attention_needed_card.dart';
@@ -21,6 +22,38 @@ class HomeScreen extends StatelessWidget {
         behavior: SnackBarBehavior.floating,
       ),
     );
+  }
+
+  void _onMileageClick(BuildContext context) {
+    AnalyticsService.instance.logVehicleAction(
+      action: 'update_mileage',
+      detail: 'Audi A6',
+    );
+    _showNotice(context, 'Оновлення пробігу...');
+  }
+
+  void _onMaintenanceClick(BuildContext context) {
+    AnalyticsService.instance.logVehicleAction(
+      action: 'add_maintenance',
+      detail: 'Audi A6',
+    );
+    _showNotice(context, 'Додавання запису ТО...');
+  }
+
+  void _onOilChangeClick(BuildContext context) {
+    AnalyticsService.instance.logVehicleAction(
+      action: 'schedule_oil_change',
+      detail: 'Audi A6',
+    );
+    _showNotice(context, 'Запис на заміну оливи');
+  }
+
+  void _onDiagnosticsClick(BuildContext context) {
+    AnalyticsService.instance.logVehicleAction(
+      action: 'schedule_diagnostics',
+      detail: 'Audi A6',
+    );
+    _showNotice(context, 'Запис на діагностику ходової');
   }
 
   @override
@@ -132,8 +165,8 @@ class HomeScreen extends StatelessWidget {
                     Expanded(
                       flex: 6,
                       child: ActiveCarCard(
-                        onUpdateMileage: () => _showNotice(context, 'Оновлення пробігу...'),
-                        onAddMaintenance: () => _showNotice(context, 'Додавання запису ТО...'),
+                        onUpdateMileage: () => _onMileageClick(context),
+                        onAddMaintenance: () => _onMaintenanceClick(context),
                         onOpenGarage: onNavigateToGarage,
                         onOpenReminders: onNavigateToReminders,
                       ),
@@ -143,8 +176,8 @@ class HomeScreen extends StatelessWidget {
                     Expanded(
                       flex: 4,
                       child: AttentionNeededCard(
-                        onScheduleOilChange: () => _showNotice(context, 'Запис на заміну оливи'),
-                        onScheduleDiagnostics: () => _showNotice(context, 'Запис на діагностику ходової'),
+                        onScheduleOilChange: () => _onOilChangeClick(context),
+                        onScheduleDiagnostics: () => _onDiagnosticsClick(context),
                         onViewAllReminders: onNavigateToReminders,
                       ),
                     ),
@@ -156,15 +189,15 @@ class HomeScreen extends StatelessWidget {
               return Column(
                 children: [
                   ActiveCarCard(
-                    onUpdateMileage: () => _showNotice(context, 'Оновлення пробігу...'),
-                    onAddMaintenance: () => _showNotice(context, 'Додавання запису ТО...'),
+                    onUpdateMileage: () => _onMileageClick(context),
+                    onAddMaintenance: () => _onMaintenanceClick(context),
                     onOpenGarage: onNavigateToGarage,
                     onOpenReminders: onNavigateToReminders,
                   ),
                   const SizedBox(height: 20),
                   AttentionNeededCard(
-                    onScheduleOilChange: () => _showNotice(context, 'Запис на заміну оливи'),
-                    onScheduleDiagnostics: () => _showNotice(context, 'Запис на діагностику ходової'),
+                    onScheduleOilChange: () => _onOilChangeClick(context),
+                    onScheduleDiagnostics: () => _onDiagnosticsClick(context),
                     onViewAllReminders: onNavigateToReminders,
                   ),
                 ],

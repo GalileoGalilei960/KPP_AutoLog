@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/auth/auth_scope.dart';
+import '../../core/services/analytics_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/utils/validators.dart';
 import '../../core/widgets/app_button.dart';
@@ -47,6 +48,7 @@ class _ForgotPasswordDialogState extends State<ForgotPasswordDialog> {
     try {
       final repository = AuthScope.repositoryOf(context);
       await repository.sendPasswordResetEmail(email);
+      await AnalyticsService.instance.logPasswordResetRequested(email: email);
 
       widget.onResetRequested?.call(email);
       if (mounted) {

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/config/firebase_config.dart';
+import '../../core/services/google_oauth_service.dart';
 import '../models/auth_user.dart';
 import 'auth_repository.dart';
 
@@ -176,23 +177,59 @@ class FirebaseAuthRestRepository implements AuthRepository {
   }
 
   @override
-  Future<void> signInWithGoogle({
-    String? email,
-    String? displayName,
-    String? photoUrl,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    final resolvedEmail = email ?? 'ostaphaladii@gmail.com';
-    final resolvedName = displayName ?? 'Остап Галадій';
-    final resolvedPhoto = photoUrl ??
-        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150';
+  Future<void> signInWithGoogle() async {
+    // Демонстраційний локальний режим, якщо OAuth не налаштовано
+    if (!FirebaseConfig.isOAuthConfigured || !FirebaseConfig.isConfigured) {
+      await Future.delayed(const Duration(milliseconds: 600));
+      final user = AuthUser(
+        uid: 'google_demo_${DateTime.now().millisecondsSinceEpoch}',
+        email: 'demo@gmail.com',
+        displayName: 'Google Demo User',
+        photoUrl: null,
+      );
+      await _saveUser(user);
+      return;
+    }
+
+    // 1. Запускаємо OAuth 2.0 flow через браузер
+    final oauthService = GoogleOAuthService(client: _client);
+    final GoogleOAuthResult oauthResult;
+    try {
+      oauthResult = await oauthService.signIn();
+    } on GoogleOAuthException catch (e) {
+      throw AuthException(e.message, code: 'GOOGLE_OAUTH_ERROR');
+    }
+
+    // 2. Обмінюємо Google ID-токен на Firebase-сеанс через signInWithIdp
+    final url = Uri.parse(
+      '$_authEndpoint/accounts:signInWithIdp?key=${FirebaseConfig.apiKey}',
+    );
+    final response = await _client.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'postBody':
+            'id_token=${oauthResult.idToken}&providerId=google.com',
+        'requestUri': 'http://localhost',
+        'returnIdpCredential': true,
+        'returnSecureToken': true,
+      }),
+    );
+
+    final data = _handleResponse(response);
 
     final user = AuthUser(
-      uid: 'google_${resolvedEmail.hashCode.abs()}',
-      email: resolvedEmail,
-      displayName: resolvedName,
-      photoUrl: resolvedPhoto,
+      uid: data['localId'] as String,
+      email: data['email'] as String? ?? '',
+      displayName: data['displayName'] as String?,
+      photoUrl: data['photoUrl'] as String?,
+      idToken: data['idToken'] as String?,
+      refreshToken: data['refreshToken'] as String?,
+      tokenExpiresAt: DateTime.now().add(
+        Duration(seconds: int.tryParse(data['expiresIn'] ?? '3600') ?? 3600),
+      ),
     );
+
     await _saveUser(user);
   }
 

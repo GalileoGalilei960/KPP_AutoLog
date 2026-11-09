@@ -38,6 +38,7 @@ dependencies:
     shared_preferences: ^2.2.2
     crypto: ^3.0.8
     url_launcher: ^6.3.3
+    flutter_bloc: ^9.1.1
 
 dev_dependencies:
     flutter_test:

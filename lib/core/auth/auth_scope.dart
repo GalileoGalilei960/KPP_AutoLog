@@ -50,8 +50,10 @@ class AuthScope extends InheritedNotifier<AuthController> {
     required super.child,
   }) : super(notifier: controller);
 
-  static AuthController of(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<AuthScope>();
+  static AuthController of(BuildContext context, {bool listen = true}) {
+    final scope = listen
+        ? context.dependOnInheritedWidgetOfExactType<AuthScope>()
+        : context.getInheritedWidgetOfExactType<AuthScope>();
     if (scope != null && scope.notifier != null) {
       return scope.notifier!;
     }
@@ -62,11 +64,11 @@ class AuthScope extends InheritedNotifier<AuthController> {
   }
 
   static AuthRepository repositoryOf(BuildContext context) {
-    final scope = context.dependOnInheritedWidgetOfExactType<AuthScope>();
+    final scope = context.getInheritedWidgetOfExactType<AuthScope>();
     if (scope != null) {
       return scope.repository;
     }
-    return of(context).repository;
+    return of(context, listen: false).repository;
   }
 }
 

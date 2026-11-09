@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/services/analytics_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../garage/garage_screen.dart';
+import '../history/history_screen.dart';
 import '../home/home_screen.dart';
 import '../profile/profile_screen.dart';
 import 'widgets/app_sidebar.dart';
@@ -61,33 +63,6 @@ class _MainLayoutState extends State<MainLayout> {
     }
   }
 
-  Widget _buildPlaceholder(String title, IconData icon) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 64, color: AppColors.textSecondary.withValues(alpha: 0.5)),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Цей розділ буде доступний у наступних лабораторних роботах',
-            style: TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildCurrentPage() {
     switch (_currentIndex) {
@@ -104,9 +79,9 @@ class _MainLayoutState extends State<MainLayout> {
           },
         );
       case 1:
-        return _buildPlaceholder('Гараж автомобілів', Icons.warehouse_outlined);
+        return const GarageScreen();
       case 2:
-        return _buildPlaceholder('Історія обслуговування', Icons.history_outlined);
+        return const HistoryScreen();
       case 3:
         return const ProfileScreen();
       default:

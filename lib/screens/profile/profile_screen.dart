@@ -10,7 +10,9 @@ import '../../core/widgets/app_badge.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_text_field.dart';
+import '../../data/models/user_settings.dart';
 import '../../data/repositories/auth_repository.dart';
+import '../../data/repositories/settings_repository.dart';
 import 'widgets/avatar_selection_dialog.dart';
 import 'widgets/diagnostic_logs_dialog.dart';
 import 'widgets/edit_name_dialog.dart';
@@ -23,6 +25,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final SettingsRepository _settingsRepository = LocalSettingsRepository();
   String _selectedCurrency = 'UAH';
   String _selectedUnit = 'km'; // 'km' or 'miles'
 
@@ -39,6 +42,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     AnalyticsService.instance.logScreenView(screenName: 'ProfileScreen');
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final settings = await _settingsRepository.getSettings();
+    if (mounted) {
+      setState(() {
+        _selectedCurrency = settings.currency;
+        _selectedUnit = settings.distanceUnit;
+      });
+    }
+  }
+
+  Future<void> _updateCurrency(String val) async {
+    setState(() => _selectedCurrency = val);
+    await _settingsRepository.saveSettings(UserSettings(
+      currency: val,
+      distanceUnit: _selectedUnit,
+    ));
+    _showNotice('Налаштування валюти збережено: $val');
+  }
+
+  Future<void> _updateUnit(String val) async {
+    setState(() => _selectedUnit = val);
+    await _settingsRepository.saveSettings(UserSettings(
+      currency: _selectedCurrency,
+      distanceUnit: val,
+    ));
+    _showNotice('Одиниці вимірювання збережено: $val');
   }
 
   @override
@@ -379,7 +411,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                       onChanged: (val) {
                         if (val != null) {
-                          setState(() => _selectedCurrency = val);
+                          _updateCurrency(val);
                         }
                       },
                     );
@@ -407,8 +439,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               // Km option
                               Expanded(
                                 child: InkWell(
-                                  onTap: () =>
-                                      setState(() => _selectedUnit = 'km'),
+                                  onTap: () => _updateUnit('km'),
                                   borderRadius: const BorderRadius.horizontal(
                                     left: Radius.circular(22),
                                   ),
@@ -454,8 +485,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               // Miles option
                               Expanded(
                                 child: InkWell(
-                                  onTap: () =>
-                                      setState(() => _selectedUnit = 'miles'),
+                                  onTap: () => _updateUnit('miles'),
                                   borderRadius: const BorderRadius.horizontal(
                                     right: Radius.circular(22),
                                   ),

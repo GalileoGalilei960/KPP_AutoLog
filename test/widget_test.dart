@@ -1,11 +1,123 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kpp_haladii_ostap_opt_3_autoservice/core/auth/auth_scope.dart';
+import 'package:kpp_haladii_ostap_opt_3_autoservice/core/routes/app_routes.dart';
+import 'package:kpp_haladii_ostap_opt_3_autoservice/data/models/auth_user.dart';
+import 'package:kpp_haladii_ostap_opt_3_autoservice/data/repositories/auth_repository.dart';
+import 'package:kpp_haladii_ostap_opt_3_autoservice/data/repositories/maintenance_repository.dart';
+import 'package:kpp_haladii_ostap_opt_3_autoservice/data/repositories/settings_repository.dart';
+import 'package:kpp_haladii_ostap_opt_3_autoservice/data/repositories/vehicles_repository.dart';
 import 'package:kpp_haladii_ostap_opt_3_autoservice/main.dart';
 import 'package:kpp_haladii_ostap_opt_3_autoservice/screens/auth/login_screen.dart';
 import 'package:kpp_haladii_ostap_opt_3_autoservice/screens/auth/register_screen.dart';
 import 'package:kpp_haladii_ostap_opt_3_autoservice/screens/shell/main_layout.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+/// Тестовий Auth-репозиторій: починає з автентифікованим юзером
+class _TestAuthRepository implements AuthRepository {
+  final _ctrl = StreamController<AuthUser?>.broadcast();
+  AuthUser? _user = const AuthUser(
+    uid: 'test_uid',
+    email: 'ostaphaladii@gmail.com',
+    displayName: 'Галадій Остап',
+  );
+
+  @override
+  Stream<AuthUser?> get authStateChanges => _ctrl.stream;
+  @override
+  AuthUser? get currentUser => _user;
+  @override
+  bool get isAuthenticated => _user != null;
+  @override
+  Future<void> initialize() async {}
+
+  @override
+  Future<void> signIn({required String email, required String password}) async {
+    _user = AuthUser(uid: 'test_uid', email: email, displayName: 'Галадій Остап');
+    _ctrl.add(_user);
+  }
+
+  @override
+  Future<void> signInWithGoogle({
+    String? email,
+    String? displayName,
+    String? photoUrl,
+  }) async {
+    _user = AuthUser(
+      uid: 'test_uid',
+      email: email ?? 'ostaphaladii@gmail.com',
+      displayName: displayName ?? 'Галадій Остап',
+      photoUrl: photoUrl,
+    );
+    _ctrl.add(_user);
+  }
+
+  @override
+  Future<void> signUp({
+    required String email,
+    required String password,
+    String? displayName,
+  }) async {
+    _user = AuthUser(
+      uid: 'test_uid',
+      email: email,
+      displayName: displayName ?? 'Галадій Остап',
+    );
+    _ctrl.add(_user);
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {}
+
+  @override
+  Future<void> updateDisplayName(String name) async {
+    _user = _user?.copyWith(displayName: name);
+    _ctrl.add(_user);
+  }
+
+  @override
+  Future<void> updatePhotoUrl(String photoUrl) async {
+    _user = _user?.copyWith(photoUrl: photoUrl);
+    _ctrl.add(_user);
+  }
+
+  @override
+  Future<void> updatePassword({
+    required String newPassword,
+    String? currentPassword,
+  }) async {}
+
+  @override
+  Future<void> signOut() async {
+    _user = null;
+    _ctrl.add(null);
+  }
+}
+
+/// Допоміжна функція для тестів — огортає AutoLogApp в AuthScope
+Widget buildTestApp({String initialRoute = AppRoutes.login}) {
+  final authRepo = _TestAuthRepository();
+  final authController = AuthController(repository: authRepo);
+  return AuthScope(
+    repository: authRepo,
+    controller: authController,
+    child: AutoLogApp(
+      initialRoute: initialRoute,
+      authRepository: authRepo,
+      vehiclesRepository: LocalVehiclesRepository(),
+      maintenanceRepository: LocalMaintenanceRepository(),
+      settingsRepository: LocalSettingsRepository(),
+    ),
+  );
+}
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
+
   testWidgets('Full flow smoke test: Login -> Home -> Profile -> Logout',
       (WidgetTester tester) async {
     // Set desktop screen size for layout testing
@@ -13,7 +125,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
 
-    await tester.pumpWidget(const AutoLogApp());
+    await tester.pumpWidget(buildTestApp());
     expect(find.text('AutoLog'), findsOneWidget);
     expect(find.text('Увійти'), findsWidgets);
 
@@ -69,7 +181,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
 
-    await tester.pumpWidget(const AutoLogApp(initialRoute: '/profile'));
+    await tester.pumpWidget(buildTestApp(initialRoute: '/profile'));
     await tester.pumpAndSettle();
 
     expect(find.byType(MainLayout), findsOneWidget);
@@ -83,7 +195,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
 
-    await tester.pumpWidget(const AutoLogApp(initialRoute: '/garage'));
+    await tester.pumpWidget(buildTestApp(initialRoute: '/garage'));
     await tester.pumpAndSettle();
 
     expect(find.byType(MainLayout), findsOneWidget);
@@ -96,7 +208,7 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
 
-    await tester.pumpWidget(const AutoLogApp(initialRoute: '/register'));
+    await tester.pumpWidget(buildTestApp(initialRoute: '/register'));
     await tester.pumpAndSettle();
 
     expect(find.byType(RegisterScreen), findsOneWidget);

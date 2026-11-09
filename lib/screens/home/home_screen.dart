@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../blocs/garage/garage_bloc.dart';
+import '../../blocs/garage/garage_state.dart';
 import '../../core/services/analytics_service.dart';
 import '../../core/theme/app_colors.dart';
 import 'widgets/active_car_card.dart';
@@ -58,6 +61,11 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final garageBloc = context.watch<GarageBloc?>();
+    final activeCar = garageBloc != null && garageBloc.state is GarageLoaded
+        ? (garageBloc.state as GarageLoaded).activeVehicle
+        : null;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
       child: Column(
@@ -165,6 +173,7 @@ class HomeScreen extends StatelessWidget {
                     Expanded(
                       flex: 6,
                       child: ActiveCarCard(
+                        vehicle: activeCar,
                         onUpdateMileage: () => _onMileageClick(context),
                         onAddMaintenance: () => _onMaintenanceClick(context),
                         onOpenGarage: onNavigateToGarage,
@@ -189,6 +198,7 @@ class HomeScreen extends StatelessWidget {
               return Column(
                 children: [
                   ActiveCarCard(
+                    vehicle: activeCar,
                     onUpdateMileage: () => _onMileageClick(context),
                     onAddMaintenance: () => _onMaintenanceClick(context),
                     onOpenGarage: onNavigateToGarage,

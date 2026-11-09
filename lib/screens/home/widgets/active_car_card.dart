@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/app_badge.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../data/models/vehicle.dart';
 
 class ActiveCarCard extends StatelessWidget {
+  final Vehicle? vehicle;
   final VoidCallback? onUpdateMileage;
   final VoidCallback? onAddMaintenance;
   final VoidCallback? onOpenGarage;
@@ -11,6 +13,7 @@ class ActiveCarCard extends StatelessWidget {
 
   const ActiveCarCard({
     super.key,
+    this.vehicle,
     this.onUpdateMileage,
     this.onAddMaintenance,
     this.onOpenGarage,
@@ -77,20 +80,22 @@ class ActiveCarCard extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
-                      'Volkswagen Golf',
-                      style: TextStyle(
+                      vehicle?.displayName ?? 'Volkswagen Golf',
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: AppColors.textPrimary,
                         letterSpacing: -0.3,
                       ),
                     ),
-                    SizedBox(height: 4),
+                    const SizedBox(height: 4),
                     Text(
-                      '2015 · 1.6 TDI · Дизель · BC 2837 TM',
-                      style: TextStyle(
+                      vehicle != null
+                          ? vehicle!.subtitleInfo
+                          : '2015 · 1.6 TDI · Дизель · BC 2837 TM',
+                      style: const TextStyle(
                         fontSize: 13,
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w400,
@@ -99,7 +104,11 @@ class ActiveCarCard extends StatelessWidget {
                   ],
                 ),
               ),
-              const AppBadge.mileage(text: '184 500 км'),
+              AppBadge.mileage(
+                text: vehicle != null
+                    ? '${vehicle!.currentMileage} км'
+                    : '184 500 км',
+              ),
             ],
           ),
           const SizedBox(height: 16),

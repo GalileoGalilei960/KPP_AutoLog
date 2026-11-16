@@ -70,7 +70,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
         displayName: _fullNameController.text,
       );
 
-      await AnalyticsService.instance.logSignUp(signUpMethod: 'email_password');
+      final user = repository.currentUser;
+      await AnalyticsService.instance.logSignUp(
+        signUpMethod: 'email_password',
+        userId: user?.uid ?? 'uid_${_emailController.text.trim().hashCode.abs()}',
+        email: user?.email ?? _emailController.text.trim(),
+        displayName: user?.displayName ?? _fullNameController.text.trim(),
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -113,7 +119,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final repository = AuthScope.repositoryOf(context);
       await repository.signInWithGoogle();
 
-      await AnalyticsService.instance.logSignUp(signUpMethod: 'google');
+      final user = repository.currentUser;
+      await AnalyticsService.instance.logSignUp(
+        signUpMethod: 'google',
+        userId: user?.uid ?? 'google_uid_${DateTime.now().millisecondsSinceEpoch}',
+        email: user?.email ?? 'google_user@gmail.com',
+        displayName: user?.displayName ?? 'Google Користувач',
+      );
 
       if (mounted) {
         Navigator.of(context).pushReplacementNamed(AppRoutes.home);

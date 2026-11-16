@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/services/analytics_service.dart';
 import '../../core/services/crashlytics_service.dart';
+import '../../data/models/auth_user.dart';
 import '../../data/repositories/auth_repository.dart';
 import 'login_event.dart';
 import 'login_state.dart';
@@ -23,7 +24,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         email: event.email.trim(),
         password: event.password,
       );
-      await AnalyticsService.instance.logLogin(loginMethod: 'email_password');
+      AuthUser? user;
+      try {
+        user = _authRepository.currentUser;
+      } catch (_) {}
+
+      await AnalyticsService.instance.logLogin(
+        loginMethod: 'email_password',
+        userId: user?.uid ?? 'uid_${event.email.trim().hashCode.abs()}',
+        email: user?.email ?? event.email.trim(),
+        displayName: user?.displayName,
+      );
       emit(const LoginSuccess());
     } on AuthException catch (e) {
       emit(LoginError(e.message));
@@ -45,7 +56,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(const LoginLoading());
     try {
       await _authRepository.signInWithGoogle();
-      await AnalyticsService.instance.logLogin(loginMethod: 'google');
+      AuthUser? user;
+      try {
+        user = _authRepository.currentUser;
+      } catch (_) {}
+
+      await AnalyticsService.instance.logLogin(
+        loginMethod: 'google',
+        userId: user?.uid ?? 'google_uid_${DateTime.now().millisecondsSinceEpoch}',
+        email: user?.email ?? 'google_user@gmail.com',
+        displayName: user?.displayName ?? 'Google Користувач',
+      );
       emit(const LoginSuccess());
     } on AuthException catch (e) {
       emit(LoginError(e.message));

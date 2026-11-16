@@ -28,11 +28,25 @@ void main(List<String> args) async {
 
   final authController = AuthController(repository: authRepository);
 
+  if (authRepository.isAuthenticated && authRepository.currentUser != null) {
+    final user = authRepository.currentUser!;
+    await AnalyticsService.instance.recordAudienceLogin(
+      userId: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      method: 'saved_session',
+    );
+  }
+
   await AnalyticsService.instance.logEvent(
     name: 'app_open',
     parameters: {
       'platform': 'linux',
       'is_authenticated': authRepository.isAuthenticated,
+      if (authRepository.currentUser != null) ...{
+        'user_id': authRepository.currentUser!.uid,
+        'email': authRepository.currentUser!.email,
+      },
     },
   );
 
